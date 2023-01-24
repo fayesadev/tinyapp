@@ -25,6 +25,7 @@
           <tr>
             <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
         </thead>
@@ -33,6 +34,9 @@
             <tr>
               <td><%= id %></td> <!-- to add a link use anchor tag <a href = #>-->
                 <td><%= urls[id] %></td>
+                <td><form method="POST" action="/urls/<%= id %>">
+                  <button type="submit">Edit</button>
+              </form></td>
                 <td><form method="POST" action="/urls/<%= id %>/delete">
                     <button type="submit">Delete</button>
                 </form></td>

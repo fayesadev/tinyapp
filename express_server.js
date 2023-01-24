@@ -43,17 +43,25 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id]
   res.redirect("/urls");
-})
+});
+//Edit a URL
+app.post("/urls/:id", (req, res) => {
+  console.log("req.params.id", req.params.id);
+  console.log("req.body", req.body);
+  urlDatabase[req.params.id] = req.body.longURL;
+  console.log("urlDatabase", urlDatabase);
+  res.redirect(`/urls`);
+});
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
-})
+});
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
-})
+});
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);

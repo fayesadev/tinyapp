@@ -5,7 +5,15 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
-function generateRandomString() {}
+function generateRandomString() {
+  let result = '';
+  const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const strLength = 6;
+  for (let i = 0; i < strLength; i++) {
+    result += char.charAt(Math.floor(Math.random()*char.length));
+  }
+  return result;
+}
 
 
 const urlDatabase = {

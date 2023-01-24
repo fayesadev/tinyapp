@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/fayesadev/tinyapp/issues"
   },
-  "homepage": "https://github.com/fayesadev/tinyapp#readme"
+  "homepage": "https://github.com/fayesadev/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }

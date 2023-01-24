@@ -19,7 +19,7 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-
+//HOME PAGE
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -32,13 +32,18 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-
+//Create a new URL
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
   console.log(req.body); // Log the POST request body to the console
   res.redirect(`/urls/${id}`); // Redirect to new shortURL page
 });
+//Delete an existing URL
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id]
+  res.redirect("/urls");
+})
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};

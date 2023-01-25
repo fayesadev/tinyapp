@@ -27,11 +27,18 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-//Login
+//Log In
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
   res.redirect("/urls");
 })
+
+//Log Out
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
+
 //urls page
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, username: req.cookies["username"]};

@@ -42,14 +42,14 @@ app.get("/", (req, res) => {
 
 //Log In Cookie
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  res.cookie("user_id", req.body[user_id]);
   res.redirect("/urls");
 });
 
 //Log Out Cookie
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 //Registration Page
@@ -72,12 +72,12 @@ app.post("/register", (req, res) => {
 
 //Urls page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { urls: urlDatabase, user: users };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars =  { username: req.cookies["username"] }
+  const templateVars =  { user: users }
   res.render("urls_new", templateVars);
 });
 
@@ -102,7 +102,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"]};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users};
   res.render("urls_show", templateVars);
 });
 

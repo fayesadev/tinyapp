@@ -34,7 +34,7 @@
             <tr>
               <td><%= id %></td> <!-- to add a link use anchor tag <a href = #>-->
                 <td><%= urls[id] %></td>
-                <td><form method="POST" action="/urls/<%= id %>">
+                <td><form method="GET" action="/urls/<%= id %>">
                   <button type="submit">Edit</button>
               </form></td>
                 <td><form method="POST" action="/urls/<%= id %>/delete">

@@ -32,6 +32,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
+
 //Create a new URL
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
@@ -39,17 +40,16 @@ app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.redirect(`/urls/${id}`); // Redirect to new shortURL page
 });
+
 //Delete an existing URL
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id]
   res.redirect("/urls");
 });
+
 //Edit a URL
 app.post("/urls/:id", (req, res) => {
-  console.log("req.params.id", req.params.id);
-  console.log("req.body", req.body);
   urlDatabase[req.params.id] = req.body.longURL;
-  console.log("urlDatabase", urlDatabase);
   res.redirect(`/urls`);
 });
 

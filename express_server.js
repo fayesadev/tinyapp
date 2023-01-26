@@ -1,41 +1,14 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 
 const app = express();
 const PORT = 8080; // default port 8080
 
-app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-const generateRandomString = function() {
-  let result = '';
-  const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const strLength = 6;
-  for (let i = 0; i < strLength; i++) {
-    result += char.charAt(Math.floor(Math.random()*char.length));
-  }
-  return result;
-}
-//helper function to go through users object
-const findUserByEmail = function(email) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return null;
-}
-//helper function to go through urlDatabase
-const findIdByUser = function(user) {
-  const urls = {};
-  for (let id in urlDatabase) {
-    if (id.userID === user.id) {
-      urls[id] = urlDatabase[id].longURL
-    }
-  }
-  return urls;
-}
+app.use(morgan('tiny'));
+app.set("view engine", "ejs");
 
 const users = {
   userRandomID: {
@@ -54,17 +27,43 @@ const users = {
     password: "123"
   }
 };
-
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
     userID: "userRandomID",
   },
-  "9sm5xK": {
+  "sgq3y6": {
     longURL: "http://www.google.com",
     userID: "userRandomID",
   },
 };
+///  HELPER FUNCTIONS ///
+const generateRandomString = function() {
+  let result = '';
+  const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const strLength = 6;
+  for (let i = 0; i < strLength; i++) {
+    result += char.charAt(Math.floor(Math.random()*char.length));
+  }
+  return result;
+}
+const findUserByEmail = function(email) {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  return null;
+}
+const urlsForUser = function(id) {
+  const urls = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      urls[key] = urlDatabase[key].longURL
+    }
+  }
+  return urls;
+}
 
 /// HOME PAGE ///
 app.get("/", (req, res) => {
@@ -137,10 +136,11 @@ app.get("/urls", (req, res) => {
     res.status(403).send("Please login to use Tinyapp")
     // res.redirect("/login");
   }
+  console.log("urlDatabase", urlDatabase);
   const userID = req.cookies["user_id"]; // check if userID exists
   const user = users[userID]; //if user doesn't exist redirect to register
-  const urls = findIdByUser(userID);
-  // console.log(urls);
+  const urls = urlsForUser(userID);
+  // console.log("urls",urls);
   const templateVars = { urls: urls, user: user };
   res.render("urls_index", templateVars);
 });
@@ -162,42 +162,66 @@ app.post("/urls", (req, res) => {
   }
   // console.log(req.body.longURL); // Log the POST request body to the console
   const id = generateRandomString();
-  console.log("urlDatabase[id]", urlDatabase[id]);
   urlDatabase[id] = { longURL: req.body.longURL,
                       userID: req.cookies["user_id"],};
+    // console.log("urlDatabase", urlDatabase);
   res.redirect(`/urls/${id}`); // Redirect to new shortURL page
 });
 
-/// URL ID PAGE ///
+//////// URL ID PAGE ////////
+/// SHOW URL ID ///
+app.get("/urls/:id", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.status(403).send("Please login to use Tinyapp");
+  }
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send("URL does not exist")
+  }
+  if (req.cookies["user_id"] !== urlDatabase[req.params.id].userID) {
+    res.status(403).send("Hey this is someone else's URL!")
+  }
+  const userID = req.cookies["user_id"]; 
+  const user = users[userID]; 
+  const longURL = urlDatabase[req.params.id].longURL;
+  const templateVars = { id: req.params.id, longURL: longURL, user: user};
+  res.render("urls_show", templateVars);
+});
+
+/// EDIT URL ID ///
 app.post("/urls/:id", (req, res) => {
   if (!req.cookies["user_id"]) {
     res.status(403).send("Please login to use Tinyapp");
+  }
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send("URL does not exist")
+  }
+  if (req.cookies["user_id"] !== urlDatabase[req.params.id].userID) {
+    res.status(403).send("Hey this is someone else's URL!")
   }
   urlDatabase[req.params.id] = { longURL: req.body.longURL,
                                  userID: req.cookies["user_id"]};
   res.redirect(`/urls`);
 });
 
-app.get("/urls/:id", (req, res) => {
-  if (!req.cookies["user_id"]) {
-    res.redirect("/login");
-  }
-  const userID = req.cookies["user_id"]; 
-  const user = users[userID]; 
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id].longURL, user: user};
-  res.render("urls_show", templateVars);
-});
-
-// Delete an existing URL
+/// DELTE URL ID ///
 app.post("/urls/:id/delete", (req, res) => {
   if (!req.cookies["user_id"]) {
     res.status(403).send("Please login to use Tinyapp");
+  }
+  //edge case if url id doesnt exist
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send("URL does not exist")
+  }
+  // console.log("req.cookies userid", req.cookies["user_id"]);
+  // console.log("urlDatabase[req.params.id].userID", urlDatabase[req.params.id].userID);
+  if (req.cookies["user_id"] !== urlDatabase[req.params.id].userID) {
+    res.status(403).send("Hey this is someone else's URL!")
   }
   delete urlDatabase[req.params.id]
   res.redirect("/urls");
 });
 
-// Redirect to long URL
+/// LONG URL REDIRECT ///
 app.get("/u/:id", (req, res) => {
   if (!(req.params.id in urlDatabase)) {
     res.status(404).send("URL does not exist")
@@ -212,6 +236,11 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+/// HANDLING ANY INVALID URL REQUEST ///
+app.get('*', (req, res) => {
+  res.status(404).redirect("/login");
 });
 
 app.listen(PORT, () => {

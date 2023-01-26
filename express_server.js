@@ -26,6 +26,16 @@ const findUserByEmail = function(email) {
   }
   return null;
 }
+//helper function to go through urlDatabase
+const findIdByUser = function(user) {
+  const urls = {};
+  for (let id in urlDatabase) {
+    if (id.userID === user.id) {
+      urls[id] = urlDatabase[id].longURL
+    }
+  }
+  return urls;
+}
 
 const users = {
   userRandomID: {
@@ -46,9 +56,16 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "userRandomID",
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "userRandomID",
+  },
 };
+
 /// HOME PAGE ///
 app.get("/", (req, res) => {
   res.redirect("/urls");
@@ -121,7 +138,9 @@ app.get("/urls", (req, res) => {
   }
   const userID = req.cookies["user_id"]; // check if userID exists
   const user = users[userID]; //if user doesn't exist redirect to register
-  const templateVars = { urls: urlDatabase, user: user };
+  const urls = findIdByUser(userID);
+  // console.log(urls);
+  const templateVars = { urls: urls, user: user };
   res.render("urls_index", templateVars);
 });
 
@@ -141,7 +160,7 @@ app.post("/urls", (req, res) => {
     res.status(403).send("Please login to use Tinyapp");
   }
   const id = generateRandomString();
-  urlDatabase[id] = req.body.longURL;
+  urlDatabase[id].longURL = req.body.longURL;
   console.log(req.body); // Log the POST request body to the console
   res.redirect(`/urls/${id}`); // Redirect to new shortURL page
 });
@@ -151,7 +170,7 @@ app.post("/urls/:id", (req, res) => {
   if (!req.cookies["user_id"]) {
     res.status(403).send("Please login to use Tinyapp");
   }
-  urlDatabase[req.params.id] = req.body.longURL;
+  urlDatabase[req.params.id] = {longURL: req.body.longURL};
   res.redirect(`/urls`);
 });
 

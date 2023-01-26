@@ -7,19 +7,23 @@
   <title>Document</title>
 </head>
 <body>
+  <%- include('partials/_header') %>
+  <h3>Login</h3>
   <div>
     <form method="POST" action="/login">
-      <label for="email">Enter Email:</label>
+      <label for="email">Email address</label>
       <input
         type="email"
         name="email"
+        placeholder="Enter email"
       />
-      <label for="password">Enter Password:</label>
+      <label for="password">Password</label>
       <input
         type="password"
         name="password"
+        placeholder="Password"
       />
-      <button type="submit" class="btn btn-primary">Log In</button>
+      <button type="submit" class="btn btn-primary">Login</button>
     </form>
   </div>  
 </body>

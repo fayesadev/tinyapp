@@ -20,7 +20,7 @@
           <a href="/register">Register</a>
           <a href="/login">Login</a>
         <% } else{ %>
-          <!-- <p>Logged in as: <%= user.email %></p> -->
+          <p>Logged in as: <%= user.email %></p>
           <form method="POST" action="/logout">
             <button type="submit">Log Out</button>
           </form>

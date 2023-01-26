@@ -49,12 +49,21 @@ app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
-//Log In Cookie
+/// LOGIN FORM
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body[user_id]);
+  const user = findUserByEmail(req.body["email"]);
+  if (!user) {
+    res.status(400).send("Unable to find Email");
+  }
+  res.cookie("user_id", user.id)
   res.redirect("/urls");
 });
-
+app.get("/login", (req, res) => {
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  }
+  res.render("login")
+})
 //Log Out Cookie
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
@@ -95,7 +104,6 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, user: user };
   res.render("urls_index", templateVars);
 });
-
 
 /// CREATE NEW URL PAGE ///
 app.get("/urls/new", (req, res) => {

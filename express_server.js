@@ -18,7 +18,7 @@ const generateRandomString = function() {
   return result;
 }
 //helper function to go through users object
-const findUser = function(email) {
+const findUserByEmail = function(email) {
   for (let user in users) {
     if (users[user].email === email) {
       return users[user];
@@ -35,7 +35,7 @@ const users = {
   },
   user2RandomID: {
     id: "user2RandomID",
-    email: "user2example.com",
+    email: "user2@example.com",
     password: "dishwasher-funk",
   },
 };
@@ -46,7 +46,7 @@ const urlDatabase = {
 };
 //HOME PAGE
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 //Log In Cookie
@@ -58,10 +58,10 @@ app.post("/login", (req, res) => {
 //Log Out Cookie
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/login");
+  res.redirect("/urls");
 });
 
-//Registration Page
+/// REGISTRATION PAGE ///
 app.get("/register", (req, res) => {
   const templateVars = { email: req.body["email"], password: req.body["password"] };
   res.render("registration", templateVars);
@@ -70,15 +70,16 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const newEmail = req.body["email"];
   const newPass = req.body["password"];
+  // console.log("users {}", users);
+  // console.log("findUser(user@example.com", findUserByEmail(newEmail));
   if (newEmail === "" || newPass === "") {
     res.status(400).send("Invalid email or password");
   }
-  if (findUser(newEmail)) {
-    res.status(400).send("Error: Email already exists!");
+  if (findUserByEmail(newEmail)) {
+    res.status(400).send("Email already exists!");
   }
   const userID = generateRandomString();
   res.cookie("user_id", userID);
-  // console.log("req.body", req.body);
   users[userID] = { id: userID,
                     email: req.body["email"],
                     password: req.body["password"] };
@@ -87,7 +88,7 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-//Urls page
+/// MY URLS PAGE ///
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"]; // check if userID exists
   const user = users[userID]; //if user doesn't exist redirect to register
@@ -95,6 +96,8 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+
+/// CREATE NEW URL PAGE ///
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies["user_id"]; 
   const user = users[userID]; 
@@ -102,7 +105,6 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//Create a new URL
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
@@ -110,13 +112,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${id}`); // Redirect to new shortURL page
 });
 
-//Delete an existing URL
-app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id]
-  res.redirect("/urls");
-});
-
-//Edit a URL
+/// URL ID PAGE ///
 app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = req.body.longURL;
   res.redirect(`/urls`);
@@ -129,6 +125,13 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// Delete an existing URL
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id]
+  res.redirect("/urls");
+});
+
+// Redirect to long URL
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);

@@ -44,16 +44,19 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-//HOME PAGE
+/// HOME PAGE ///
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
-/// LOGIN FORM
+/// LOGIN FORM ///
 app.post("/login", (req, res) => {
   const user = findUserByEmail(req.body["email"]);
   if (!user) {
-    res.status(400).send("Unable to find Email");
+    res.status(403).send("Unable to find Email");
+  }
+  if (req.body["password"] !== user.password) {
+    res.status(403).send("Invalid Password");
   }
   res.cookie("user_id", user.id)
   res.redirect("/urls");
@@ -64,7 +67,7 @@ app.get("/login", (req, res) => {
   }
   res.render("login")
 })
-//Log Out Cookie
+//Log out to clear cookie
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");

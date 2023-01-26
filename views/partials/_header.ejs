@@ -16,7 +16,7 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <% if(!username){ %>
+        <% if(!user){ %>
           <form method="POST" action="/login">
             <input
             type="text"
@@ -26,7 +26,7 @@
             <button type="submit">Log In</button>
           </form>
         <% } else{ %>
-          <p>Logged in as: <%= username %></p>
+          <p>Logged in as: <%= user.email %></p>
           <form method="POST" action="/logout">
             <button type="submit">Log Out</button>
           </form>

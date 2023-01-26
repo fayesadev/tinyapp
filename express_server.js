@@ -8,7 +8,7 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-function generateRandomString() {
+const generateRandomString = function() {
   let result = '';
   const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const strLength = 6;
@@ -16,6 +16,15 @@ function generateRandomString() {
     result += char.charAt(Math.floor(Math.random()*char.length));
   }
   return result;
+}
+//helper function to go through users object
+const findUser = function(email) {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  return null;
 }
 
 const users = {
@@ -59,6 +68,14 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const newEmail = req.body["email"];
+  const newPass = req.body["password"];
+  if (newEmail === "" || newPass === "") {
+    res.status(400).send("Invalid email or password");
+  }
+  if (findUser(newEmail)) {
+    res.status(400).send("Error: Email already exists!");
+  }
   const userID = generateRandomString();
   res.cookie("user_id", userID);
   // console.log("req.body", req.body);
@@ -72,12 +89,16 @@ app.post("/register", (req, res) => {
 
 //Urls page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: users };
+  const userID = req.cookies["user_id"]; // check if userID exists
+  const user = users[userID]; //if user doesn't exist redirect to register
+  const templateVars = { urls: urlDatabase, user: user };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars =  { user: users }
+  const userID = req.cookies["user_id"]; 
+  const user = users[userID]; 
+  const templateVars =  { user: user }
   res.render("urls_new", templateVars);
 });
 
@@ -102,7 +123,9 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: users};
+  const userID = req.cookies["user_id"]; 
+  const user = users[userID]; 
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: user};
   res.render("urls_show", templateVars);
 });
 

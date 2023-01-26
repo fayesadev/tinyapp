@@ -116,6 +116,9 @@ app.post("/register", (req, res) => {
 
 /// MY URLS PAGE ///
 app.get("/urls", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  }
   const userID = req.cookies["user_id"]; // check if userID exists
   const user = users[userID]; //if user doesn't exist redirect to register
   const templateVars = { urls: urlDatabase, user: user };
@@ -124,6 +127,9 @@ app.get("/urls", (req, res) => {
 
 /// CREATE NEW URL PAGE ///
 app.get("/urls/new", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  }
   const userID = req.cookies["user_id"]; 
   const user = users[userID]; 
   const templateVars =  { user: user };
@@ -131,6 +137,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.status(403).send("Please login to use Tinyapp");
+  }
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
   console.log(req.body); // Log the POST request body to the console
@@ -139,11 +148,17 @@ app.post("/urls", (req, res) => {
 
 /// URL ID PAGE ///
 app.post("/urls/:id", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.status(403).send("Please login to use Tinyapp");
+  }
   urlDatabase[req.params.id] = req.body.longURL;
   res.redirect(`/urls`);
 });
 
 app.get("/urls/:id", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  }
   const userID = req.cookies["user_id"]; 
   const user = users[userID]; 
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: user};
@@ -152,6 +167,9 @@ app.get("/urls/:id", (req, res) => {
 
 // Delete an existing URL
 app.post("/urls/:id/delete", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.status(403).send("Please login to use Tinyapp");
+  }
   delete urlDatabase[req.params.id]
   res.redirect("/urls");
 });

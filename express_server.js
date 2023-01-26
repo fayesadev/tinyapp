@@ -176,6 +176,9 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Redirect to long URL
 app.get("/u/:id", (req, res) => {
+  if (!(req.params.id in urlDatabase)) {
+    res.status(404).send("URL does not exist")
+  }
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });

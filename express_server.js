@@ -2,6 +2,7 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
+const getUserByEmail = require("./helpers")
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -52,14 +53,7 @@ const generateRandomString = function() {
   }
   return result;
 }
-const findUserByEmail = function(email) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return null;
-}
+
 const urlsForUser = function(id) {
   const urls = {};
   for (let key in urlDatabase) {
@@ -77,7 +71,7 @@ app.get("/", (req, res) => {
 
 /// LOGIN FORM ///
 app.post("/login", (req, res) => {
-  const user = findUserByEmail(req.body.email);
+  const user = getUserByEmail(req.body.email, users);
 
   if (!user) {
     return res.status(403).send("Unable to find Email");
@@ -123,7 +117,7 @@ app.post("/register", (req, res) => {
   if (newEmail === "" || newPass === "") {
     return res.status(400).send("Invalid email or password");
   }
-  if (findUserByEmail(newEmail)) {
+  if (getUserByEmail(newEmail, users)) {
     return res.status(400).send("Email already exists!");
   }
   const userID = generateRandomString();

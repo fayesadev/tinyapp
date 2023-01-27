@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
 
@@ -7,7 +7,10 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['user_id']
+}));
 app.use(morgan('tiny'));
 app.set("view engine", "ejs");
 
@@ -79,16 +82,16 @@ app.post("/login", (req, res) => {
   if (!user) {
     return res.status(403).send("Unable to find Email");
   }
-  console.log("user", user);
-  console.log("req.body.password", req.body.password);
+  // console.log("user", user);
+  // console.log("req.body.password", req.body.password);
   if (!bcrypt.compareSync(req.body.password, user.hashedPassword)) {
     return res.status(403).send("Invalid Password");
   }
-  res.cookie("user_id", user.id)
+  req.session.user_id = user.id;
   res.redirect("/urls");
 });
 app.get("/login", (req, res) => {
-  const userID = req.cookies["user_id"]; 
+  const userID = req.session.user_id; 
   if (userID) {
     return res.redirect("/urls");
   }
@@ -99,16 +102,16 @@ app.get("/login", (req, res) => {
 
 /// LOGOUT ENDPOINT ///
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session.user_id = null;
   res.redirect("/login");
 });
 
 /// REGISTRATION PAGE ///
 app.get("/register", (req, res) => {
-  if (req.cookies["user_id"]) {
+  const userID = req.session.user_id; 
+  if (userID) {
     return res.redirect("/urls");
   }
-  const userID = req.cookies["user_id"]; 
   const user = users[userID]; 
   const templateVars = { email: req.body.email, user: user };
   res.render("registration", templateVars);
@@ -132,14 +135,14 @@ app.post("/register", (req, res) => {
       users[userID] = { id: userID,
                         email: newEmail,
                         hashedPassword: hash };
-      res.cookie("user_id", userID);
+      req.session.user_id = userID;
       res.redirect("/urls");
     })
 });
 
 /// MY URLS PAGE ///
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"]; // check if userID exists
+  const userID = req.session.user_id; // check if userID exists
   if (!userID) {
     return res.status(403).send("Please login to use TinyApp");
   }
@@ -151,29 +154,32 @@ app.get("/urls", (req, res) => {
 
 /// CREATE NEW URL PAGE ///
 app.get("/urls/new", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  const userID = req.session.user_id; 
+  if (!userID) {
     return res.redirect("/login");
   }
-  const userID = req.cookies["user_id"]; 
   const user = users[userID]; 
   const templateVars =  { user: user };
   res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     return res.status(403).send("Please login to use TinyApp");
+  }
+  if (req.body.longURL === "") {
+    return res.status(400).send("Can't shorten something that's empty!")
   }
   const id = generateRandomString();
   urlDatabase[id] = { longURL: req.body.longURL,
-                      userID: req.cookies["user_id"],};
+                      userID: req.session.user_id };
   res.redirect(`/urls/${id}`); // Redirect to new shortURL page
 });
 
 //////// URL ID PAGE ////////
 /// SHOW URL ID ///
 app.get("/urls/:id", (req, res) => {
-  const userID = req.cookies["user_id"]; 
+  const userID = req.session.user_id; 
   if (!userID) {
     return res.status(403).send("Please login to use TinyApp");
   }
@@ -191,30 +197,32 @@ app.get("/urls/:id", (req, res) => {
 
 /// EDIT URL ID ///
 app.post("/urls/:id", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  const userID = req.session.user_id;
+  if (!userID) {
     return res.status(403).send("Please login to use TinyApp");
   }
   if (!(req.params.id in urlDatabase)) {
     return res.status(404).send("URL does not exist");
   }
-  if (req.cookies["user_id"] !== urlDatabase[req.params.id].userID) {
+  if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
   }
   urlDatabase[req.params.id] = { longURL: req.body.longURL,
-                                 userID: req.cookies["user_id"]};
+                                 userID: userID};
   res.redirect(`/urls`);
 });
 
 /// DELETE URL ID ///
 app.post("/urls/:id/delete", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  const userID = req.session.user_id;
+  if (!userID) {
     return res.status(403).send("Please login to use TinyApp");
   }
   //edge case if url id doesnt exist
   if (!(req.params.id in urlDatabase)) {
     return res.status(404).send("URL does not exist");
   }
-  if (req.cookies["user_id"] !== urlDatabase[req.params.id].userID) {
+  if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
   }
   delete urlDatabase[req.params.id];

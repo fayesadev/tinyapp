@@ -15,19 +15,16 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    // password: "purple-monkey-dinosaur",
     hashedPassword: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    // password: "dishwasher-funk",
     hashedPassword: bcrypt.hashSync("dishwasher-funk", 10)
   },
   user3RandomID: {
     id: "user3RandomID",
     email: "a@a.com",
-    // password: "123",
     hashedPassword: bcrypt.hashSync("123", 10)
   }
 };
@@ -41,6 +38,7 @@ const urlDatabase = {
     userID: "userRandomID",
   },
 };
+
 ///  HELPER FUNCTIONS ///
 const generateRandomString = function() {
   let result = '';
@@ -68,6 +66,7 @@ const urlsForUser = function(id) {
   }
   return urls;
 }
+
 /// HOME PAGE ///
 app.get("/", (req, res) => {
   res.redirect("/urls");

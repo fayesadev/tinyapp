@@ -168,7 +168,7 @@ app.post("/urls", (req, res) => {
   const id = generateRandomString();
   urlDatabase[id] = { longURL: req.body.longURL,
                       userID: req.session.user_id };
-  res.redirect(`/urls/${id}`); // Redirect to new shortURL page
+  res.redirect(`/urls/${id}`);
 });
 
 //////// URL ID PAGE ////////
@@ -216,7 +216,6 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!userID) {
     return res.status(403).send("Please login to use TinyApp.");
   }
-  //edge case if url id doesnt exist
   if (!(req.params.id in urlDatabase)) {
     return res.status(404).send("URL does not exist!");
   }

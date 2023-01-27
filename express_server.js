@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const { getUserByEmail } = require("./helpers");
 
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -74,10 +74,10 @@ app.get("/", (req, res) => {
 app.post("/login", (req, res) => {
   const user = getUserByEmail(req.body.email, users);
   if (!user) {
-    return res.status(403).send("Unable to find Email");
-  }
+    return res.status(403).send("Uh oh! Seems like we don't have you registered.");
+  } //Compare hashed password with user's password input
   if (!bcrypt.compareSync(req.body.password, user.hashedPassword)) {
-    return res.status(403).send("Invalid Password");
+    return res.status(403).send("Email and password do not match.");
   }
   req.session.user_id = user.id;
   res.redirect("/urls");
@@ -114,12 +114,13 @@ app.post("/register", (req, res) => {
   const newEmail = req.body.email;
   const newPass = req.body.password;
   if (newEmail === "" || newPass === "") {
-    return res.status(400).send("Invalid email or password");
+    return res.status(400).send("Invalid email or password.");
   }
   if (getUserByEmail(newEmail, users)) {
     return res.status(400).send("Email already exists!");
   }
   const userID = generateRandomString();
+  // Store user's passwords as a hashed password using bcrypt
   bcrypt.genSalt(10)
     .then((salt) => {
       return bcrypt.hashSync(newPass, salt);
@@ -135,9 +136,10 @@ app.post("/register", (req, res) => {
 
 /// MY URLS PAGE ///
 app.get("/urls", (req, res) => {
-  const userID = req.session.user_id; // check if userID exists
+  const userID = req.session.user_id; 
+  //Check if user is logged in via user ID cookie
   if (!userID) {
-    return res.status(403).send("Please login to use TinyApp");
+    return res.status(403).send("Please login to use TinyApp.");
   }
   const user = users[userID];
   const urls = urlsForUser(userID);
@@ -158,7 +160,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
-    return res.status(403).send("Please login to use TinyApp");
+    return res.status(403).send("Please login to use TinyApp.");
   }
   if (req.body.longURL === "") {
     return res.status(400).send("Can't shorten something that's empty!");
@@ -174,10 +176,10 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const userID = req.session.user_id;
   if (!userID) {
-    return res.status(403).send("Please login to use TinyApp");
+    return res.status(403).send("Please login to use TinyApp.");
   }
   if (!(req.params.id in urlDatabase)) {
-    return res.status(404).send("URL does not exist");
+    return res.status(404).send("URL does not exist!");
   }
   if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
@@ -192,10 +194,10 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const userID = req.session.user_id;
   if (!userID) {
-    return res.status(403).send("Please login to use TinyApp");
+    return res.status(403).send("Please login to use TinyApp.");
   }
   if (!(req.params.id in urlDatabase)) {
-    return res.status(404).send("URL does not exist");
+    return res.status(404).send("URL does not exist!");
   }
   if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
@@ -212,11 +214,11 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const userID = req.session.user_id;
   if (!userID) {
-    return res.status(403).send("Please login to use TinyApp");
+    return res.status(403).send("Please login to use TinyApp.");
   }
   //edge case if url id doesnt exist
   if (!(req.params.id in urlDatabase)) {
-    return res.status(404).send("URL does not exist");
+    return res.status(404).send("URL does not exist!");
   }
   if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
@@ -228,7 +230,7 @@ app.post("/urls/:id/delete", (req, res) => {
 /// LONG URL REDIRECT ///
 app.get("/u/:id", (req, res) => {
   if (!(req.params.id in urlDatabase)) {
-    return res.status(404).send("URL does not exist");
+    return res.status(404).send("URL does not exist!");
   }
   const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);

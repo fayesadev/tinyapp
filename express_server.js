@@ -32,6 +32,7 @@ const users = {
     hashedPassword: bcrypt.hashSync("123", 10)
   }
 };
+
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
@@ -72,27 +73,25 @@ app.get("/", (req, res) => {
 /// LOGIN FORM ///
 app.post("/login", (req, res) => {
   const user = getUserByEmail(req.body.email, users);
-
   if (!user) {
     return res.status(403).send("Unable to find Email");
   }
-  // console.log("user", user);
-  // console.log("req.body.password", req.body.password);
   if (!bcrypt.compareSync(req.body.password, user.hashedPassword)) {
     return res.status(403).send("Invalid Password");
   }
   req.session.user_id = user.id;
   res.redirect("/urls");
 });
+
 app.get("/login", (req, res) => {
-  const userID = req.session.user_id; 
+  const userID = req.session.user_id;
   if (userID) {
     return res.redirect("/urls");
   }
-  const user = users[userID]; 
+  const user = users[userID];
   const templateVars =  { user: user };
   res.render("login", templateVars);
-})
+});
 
 /// LOGOUT ENDPOINT ///
 app.post("/logout", (req, res) => {
@@ -102,11 +101,11 @@ app.post("/logout", (req, res) => {
 
 /// REGISTRATION PAGE ///
 app.get("/register", (req, res) => {
-  const userID = req.session.user_id; 
+  const userID = req.session.user_id;
   if (userID) {
     return res.redirect("/urls");
   }
-  const user = users[userID]; 
+  const user = users[userID];
   const templateVars = { email: req.body.email, user: user };
   res.render("registration", templateVars);
 });
@@ -131,7 +130,7 @@ app.post("/register", (req, res) => {
                         hashedPassword: hash };
       req.session.user_id = userID;
       res.redirect("/urls");
-    })
+    });
 });
 
 /// MY URLS PAGE ///
@@ -140,7 +139,7 @@ app.get("/urls", (req, res) => {
   if (!userID) {
     return res.status(403).send("Please login to use TinyApp");
   }
-  const user = users[userID]; 
+  const user = users[userID];
   const urls = urlsForUser(userID);
   const templateVars = { urls: urls, user: user };
   res.render("urls_index", templateVars);
@@ -148,11 +147,11 @@ app.get("/urls", (req, res) => {
 
 /// CREATE NEW URL PAGE ///
 app.get("/urls/new", (req, res) => {
-  const userID = req.session.user_id; 
+  const userID = req.session.user_id;
   if (!userID) {
     return res.redirect("/login");
   }
-  const user = users[userID]; 
+  const user = users[userID];
   const templateVars =  { user: user };
   res.render("urls_new", templateVars);
 });
@@ -162,7 +161,7 @@ app.post("/urls", (req, res) => {
     return res.status(403).send("Please login to use TinyApp");
   }
   if (req.body.longURL === "") {
-    return res.status(400).send("Can't shorten something that's empty!")
+    return res.status(400).send("Can't shorten something that's empty!");
   }
   const id = generateRandomString();
   urlDatabase[id] = { longURL: req.body.longURL,
@@ -173,7 +172,7 @@ app.post("/urls", (req, res) => {
 //////// URL ID PAGE ////////
 /// SHOW URL ID ///
 app.get("/urls/:id", (req, res) => {
-  const userID = req.session.user_id; 
+  const userID = req.session.user_id;
   if (!userID) {
     return res.status(403).send("Please login to use TinyApp");
   }
@@ -183,7 +182,7 @@ app.get("/urls/:id", (req, res) => {
   if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
   }
-  const user = users[userID]; 
+  const user = users[userID];
   const longURL = urlDatabase[req.params.id].longURL;
   const templateVars = { id: req.params.id, longURL: longURL, user: user};
   res.render("urls_show", templateVars);
@@ -200,6 +199,9 @@ app.post("/urls/:id", (req, res) => {
   }
   if (userID !== urlDatabase[req.params.id].userID) {
     return res.status(403).send("Hey this is someone else's URL!");
+  }
+  if (req.body.longURL === "") {
+    return res.status(400).send("Can't shorten something that's empty!");
   }
   urlDatabase[req.params.id] = { longURL: req.body.longURL,
                                  userID: userID};
@@ -235,10 +237,6 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
 
 /// HANDLING ANY INVALID URL REQUEST ///
 app.get('*', (req, res) => {

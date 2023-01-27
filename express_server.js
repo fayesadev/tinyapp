@@ -141,8 +141,7 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"]; // check if userID exists
   if (!userID) {
-    return res.status(403).send("Please login to use Tinyapp");
-    // res.redirect("/login");
+    return res.status(403).send("Please login to use TinyApp");
   }
   const user = users[userID]; 
   const urls = urlsForUser(userID);
@@ -163,7 +162,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.cookies["user_id"]) {
-    return res.status(403).send("Please login to use Tinyapp");
+    return res.status(403).send("Please login to use TinyApp");
   }
   const id = generateRandomString();
   urlDatabase[id] = { longURL: req.body.longURL,
@@ -176,7 +175,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const userID = req.cookies["user_id"]; 
   if (!userID) {
-    return res.status(403).send("Please login to use Tinyapp");
+    return res.status(403).send("Please login to use TinyApp");
   }
   if (!(req.params.id in urlDatabase)) {
     return res.status(404).send("URL does not exist");
@@ -193,7 +192,7 @@ app.get("/urls/:id", (req, res) => {
 /// EDIT URL ID ///
 app.post("/urls/:id", (req, res) => {
   if (!req.cookies["user_id"]) {
-    return res.status(403).send("Please login to use Tinyapp");
+    return res.status(403).send("Please login to use TinyApp");
   }
   if (!(req.params.id in urlDatabase)) {
     return res.status(404).send("URL does not exist");
@@ -209,7 +208,7 @@ app.post("/urls/:id", (req, res) => {
 /// DELETE URL ID ///
 app.post("/urls/:id/delete", (req, res) => {
   if (!req.cookies["user_id"]) {
-    return res.status(403).send("Please login to use Tinyapp");
+    return res.status(403).send("Please login to use TinyApp");
   }
   //edge case if url id doesnt exist
   if (!(req.params.id in urlDatabase)) {

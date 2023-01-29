@@ -46,7 +46,8 @@ app.get("/login", (req, res) => {
 
 /// LOGOUT ENDPOINT ///
 app.post("/logout", (req, res) => {
-  req.session = null;
+  req.session.user_id = null;
+  // req.session.destroy;
   res.redirect("/login");
 });
 

@@ -45,28 +45,6 @@ const urlDatabase = {
   },
 };
 
-///  HELPER FUNCTIONS ///
-//Creates a randomly generated string of 6 characters --to be used to make a unique ID
-const generateRandomString = function() {
-  let result = '';
-  const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const strLength = 6;
-  for (let i = 0; i < strLength; i++) {
-    result += char.charAt(Math.floor(Math.random() * char.length));
-  }
-  return result;
-};
-
-//Returns an object with a shortened ID and its long URL as key-value pairs for a specific user
-const urlsForUser = function(id) {
-  const urls = {};
-  for (let key in urlDatabase) {
-    if (urlDatabase[key].userID === id) {
-      urls[key] = urlDatabase[key].longURL;
-    }
-  }
-  return urls;
-};
 
 /// HOME PAGE ///
 app.get("/", (req, res) => {
@@ -98,7 +76,7 @@ app.get("/login", (req, res) => {
 
 /// LOGOUT ENDPOINT ///
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
+  req.session = null;
   res.redirect("/login");
 });
 

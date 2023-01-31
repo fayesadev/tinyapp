@@ -24,6 +24,7 @@ app.get("/", (req, res) => {
 /// LOGIN FORM ///
 app.post("/login", (req, res) => {
   const user = getUserByEmail(req.body.email, users);
+  console.log(user);
   if (!user) {
     return res.status(403).send("Uh oh! Seems like we don't have you registered.");
   } //Compare hashed password with user's password input
@@ -46,7 +47,6 @@ app.get("/login", (req, res) => {
 
 /// LOGOUT ENDPOINT ///
 app.post("/logout", (req, res) => {
-  // req.session["user_id"] = null;
   res.clearCookie("session");
   res.clearCookie("session.sig");
   res.redirect("/login");
@@ -73,19 +73,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Email already exists!");
   }
   const userID = generateRandomString();
-  // Store user's passwords as a hashed password using bcrypt
-  // bcrypt.genSalt(10)
-  //   .then((salt) => {
-  //     console.log("salt", salt)
-  //     return bcrypt.hashSync(newPass, salt);
-  //   })
-  //   .then((hash) => {
-  //     console.log("hash", hash)
-  //     users[userID] = { id: userID, email: newEmail, hashedPassword: hash };
-  //     req.session.user_id = userID;
-  //     res.redirect("/urls");
-  //   });
-  users[userID] = { id: userID, email: newEmail, hashedPassword: bcrypt.hash(newPass, 10) };
+  users[userID] = { id: userID, email: newEmail, hashedPassword: bcrypt.hashSync(newPass, 10) };
   req.session["user_id"] = userID;
   res.redirect("/urls");
 });

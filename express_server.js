@@ -46,8 +46,9 @@ app.get("/login", (req, res) => {
 
 /// LOGOUT ENDPOINT ///
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
-  // req.session.destroy;
+  // req.session["user_id"] = null;
+  res.clearCookie("session");
+  res.clearCookie("session.sig");
   res.redirect("/login");
 });
 
@@ -73,15 +74,20 @@ app.post("/register", (req, res) => {
   }
   const userID = generateRandomString();
   // Store user's passwords as a hashed password using bcrypt
-  bcrypt.genSalt(10)
-    .then((salt) => {
-      return bcrypt.hashSync(newPass, salt);
-    })
-    .then((hash) => {
-      users[userID] = { id: userID, email: newEmail, hashedPassword: hash };
-      req.session.user_id = userID;
-      res.redirect("/urls");
-    });
+  // bcrypt.genSalt(10)
+  //   .then((salt) => {
+  //     console.log("salt", salt)
+  //     return bcrypt.hashSync(newPass, salt);
+  //   })
+  //   .then((hash) => {
+  //     console.log("hash", hash)
+  //     users[userID] = { id: userID, email: newEmail, hashedPassword: hash };
+  //     req.session.user_id = userID;
+  //     res.redirect("/urls");
+  //   });
+  users[userID] = { id: userID, email: newEmail, hashedPassword: bcrypt.hash(newPass, 10) };
+  req.session["user_id"] = userID;
+  res.redirect("/urls");
 });
 
 /// MY URLS PAGE ///

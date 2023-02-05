@@ -35,10 +35,10 @@
               <td><%= id %></td> <!-- to add a link use anchor tag <a href = #>-->
                 <td><%= urls[id] %></td>
                 <td><form method="GET" action="/urls/<%= id %>">
-                  <button type="submit">Edit</button>
+                  <button type="submit" class="btn btn-outline-dark">Edit</button>
               </form></td>
                 <td><form method="POST" action="/urls/<%= id %>/delete">
-                    <button type="submit">Delete</button>
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
                 </form></td>
             </tr>
           <% } %>

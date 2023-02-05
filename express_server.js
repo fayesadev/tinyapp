@@ -18,7 +18,7 @@ app.set("view engine", "ejs");
 
 /// HOME PAGE ///
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 /// LOGIN FORM ///
